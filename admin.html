@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — प्रज्ञा क्लासेज बाड़मेर</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='15' width='100' height='100' fill='%231E3A5F'/><text x='50' y='65' font-size='45' font-weight='bold' fill='white' text-anchor='middle' font-family='sans-serif'>PC</text></svg>">
+  <link rel="stylesheet" href="/css/index.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/pages.css">
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { showToast, formatPrice } from '/js/main.js';
+    import { COURSES, CATEGORIES } from '/js/data.js';
+
+    // Auth check
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (!user) { window.location.href = '/login.html'; }
+
+    const app = document.getElementById('app');
+    let activeNav = 'dashboard';
+    let courses = JSON.parse(JSON.stringify(COURSES)); // mutable copy
+    let editingCourse = null;
+
+    // Mock data
+    const stats = {
+      totalStudents: 847,
+      totalRevenue: 124500,
+      activeCourses: courses.length,
+      pendingDoubts: 5,
+    };
+
+    const students = [
+      { id: 1, name: 'राहुल शर्मा', phone: '9876543210', course: 'संपूर्ण हिंदी व्याकरण', joined: '03 Apr 2026', status: 'active' },
+      { id: 2, name: 'प्रिया मेघवाल', phone: '9876543211', course: 'स्कूल व्याख्याता टेस्ट-02', joined: '01 Apr 2026', status: 'active' },
+      { id: 3, name: 'विकास चौधरी', phone: '9876543212', course: 'हिंदी साहित्य इतिहास', joined: '28 Mar 2026', status: 'active' },
+      { id: 4, name: 'सुनीता कुमारी', phone: '9876543213', course: 'वरिष्ठ शिक्षक टेस्ट-01', joined: '25 Mar 2026', status: 'inactive' },
+    ];
+
+    const doubts = [
+      { id: 1, student: 'राहुल शर्मा', question: 'रीतिकाल को श्रृंगार काल क्यों कहते हैं?', category: 'साहित्य', status: 'pending', date: '08 Apr 2026' },
+      { id: 2, student: 'प्रिया मेघवाल', question: 'उत्प्रेक्षा और रूपक अलंकार में क्या फर्क है?', category: 'काव्यशास्त्र', status: 'pending', date: '07 Apr 2026' },
+      { id: 3, student: 'विकास चौधरी', question: 'द्विगु और बहुव्रीहि समास का अंतर बताएं?', category: 'व्याकरण', status: 'resolved', date: '05 Apr 2026', answer: 'द्विगु में संख्यावाचक पूर्वपद होता है, बहुव्रीहि में दोनों पद मिलकर तीसरे अर्थ को प्रकट करते हैं।' },
+    ];
+
+    function renderNavItems() {
+      const items = [
+        { id: 'dashboard', icon: '📊', label: 'Dashboard' },
+        { id: 'courses', icon: '📚', label: 'Courses' },
+        { id: 'students', icon: '👥', label: 'Students' },
+        { id: 'doubts', icon: '💬', label: 'Q&A Doubts' },
+        { id: 'offers', icon: '🎁', label: 'Offers' },
+        { id: 'analytics', icon: '📈', label: 'Analytics' },
+      ];
+      return items.map(it => `
+        <div class="admin-nav-item ${activeNav === it.id ? 'active' : ''}" onclick="setNav('${it.id}')">
+          <span>${it.icon}</span>
+          <span>${it.label}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderContent() {
+      switch(activeNav) {
+        case 'dashboard': return renderDashboard();
+        case 'courses': return renderCoursesMgmt();
+        case 'students': return renderStudentsMgmt();
+        case 'doubts': return renderDoubtsMgmt();
+        case 'offers': return renderOffersMgmt();
+        case 'analytics': return renderAnalytics();
+        default: return renderDashboard();
+      }
+    }
+
+    function renderDashboard() {
+      return `
+        <div class="admin-header">
+          <h1>📊 Dashboard</h1>
+          <span style="color:var(--text-secondary);font-size:0.9rem;">आज: ${new Date().toLocaleDateString('hi-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+        </div>
+
+        <div class="dashboard-stats">
+          <div class="dashboard-stat-card">
+            <div class="icon" style="background:var(--accent-light);color:var(--accent);">👥</div>
+            <div class="value">${stats.totalStudents}</div>
+            <div class="label">कुल विद्यार्थी</div>
+          </div>
+          <div class="dashboard-stat-card">
+            <div class="icon" style="background:var(--success-light);color:var(--success);">💰</div>
+            <div class="value">${formatPrice(stats.totalRevenue)}</div>
+            <div class="label">कुल राजस्व</div>
+          </div>
+          <div class="dashboard-stat-card">
+            <div class="icon" style="background:var(--info-light);color:var(--info);">📚</div>
+            <div class="value">${stats.activeCourses}</div>
+            <div class="label">एक्टिव कोर्स</div>
+          </div>
+          <div class="dashboard-stat-card" style="border:2px solid var(--warning);">
+            <div class="icon" style="background:var(--warning-light);color:var(--warning);">💬</div>
+            <div class="value">${stats.pendingDoubts}</div>
+            <div class="label">Pending Doubts</div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card" style="padding:var(--space-xl);">
+          <h3 style="margin-bottom:var(--space-lg);font-family:var(--font-hindi);">🕐 Recent Activity</h3>
+          <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md);background:var(--bg-primary);border-radius:var(--radius-md);">
+              <span>👤</span>
+              <div style="flex:1;">
+                <span style="font-weight:600;">राहुल शर्मा</span> ने <span style="color:var(--accent);">संपूर्ण हिंदी व्याकरण</span> कोर्स खरीदा
+              </div>
+              <span style="font-size:0.78rem;color:var(--text-muted);">2 घंटे पहले</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md);background:var(--bg-primary);border-radius:var(--radius-md);">
+              <span>💬</span>
+              <div style="flex:1;">
+                <span style="font-weight:600;">प्रिया मेघवाल</span> ने एक <span style="color:var(--warning);">doubt</span> पूछा
+              </div>
+              <span style="font-size:0.78rem;color:var(--text-muted);">5 घंटे पहले</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md);background:var(--bg-primary);border-radius:var(--radius-md);">
+              <span>📝</span>
+              <div style="flex:1;">
+                <span style="font-weight:600;">विकास चौधरी</span> ने <span style="color:var(--success);">टेस्ट #5</span> में 82% स्कोर किया
+              </div>
+              <span style="font-size:0.78rem;color:var(--text-muted);">1 दिन पहले</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCoursesMgmt() {
+      return `
+        <div class="admin-header">
+          <h1>📚 Course Management</h1>
+          <button class="btn btn-primary" onclick="openCourseForm()">+ नया कोर्स जोड़ें</button>
+        </div>
+
+        <div class="admin-table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>कोर्स का नाम</th>
+                <th>Category</th>
+                <th>कीमत</th>
+                <th>Discount</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${courses.map(c => `
+                <tr>
+                  <td style="font-family:var(--font-hindi);font-weight:600;max-width:250px;">${c.title}</td>
+                  <td><span class="badge badge-primary">${c.category}</span></td>
+                  <td>${formatPrice(c.price)}</td>
+                  <td><span class="badge badge-success">${c.discount}% OFF</span></td>
+                  <td><span class="badge badge-success">Active</span></td>
+                  <td class="actions">
+                    <button class="action-btn edit" onclick="editCourse(${c.id})" title="Edit">✏️</button>
+                    <button class="action-btn delete" onclick="deleteCourse(${c.id})" title="Delete">🗑️</button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Course Form Modal -->
+        <div class="modal-overlay" id="courseFormOverlay" onclick="closeCourseForm()"></div>
+        <div class="modal" id="courseFormModal" style="max-width:600px;">
+          <button class="modal-close" onclick="closeCourseForm()">✕</button>
+          <h3 id="courseFormTitle" style="margin-bottom:var(--space-xl);font-family:var(--font-hindi);">नया कोर्स जोड़ें</h3>
+          <form onsubmit="saveCourse(event)">
+            <div class="form-group">
+              <label class="form-label">कोर्स का नाम (Hindi) *</label>
+              <input type="text" id="cfTitle" class="form-input" placeholder="जैसे: संपूर्ण हिंदी व्याकरण" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description *</label>
+              <textarea id="cfDesc" class="form-input" placeholder="कोर्स का विवरण..." required></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">
+              <div class="form-group">
+                <label class="form-label">कीमत (₹) *</label>
+                <input type="number" id="cfPrice" class="form-input" placeholder="299" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Original Price (₹) *</label>
+                <input type="number" id="cfOriginal" class="form-input" placeholder="3000" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category *</label>
+              <select id="cfCategory" class="form-select" required>
+                ${CATEGORIES.filter(c => c.id !== 'all').map(c => `<option value="${c.id}">${c.label}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Features (comma separated)</label>
+              <input type="text" id="cfFeatures" class="form-input" placeholder="15 टेस्ट, 1650 प्रश्न, 5 बार">
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg btn-full">💾 सेव करें</button>
+          </form>
+        </div>
+      `;
+    }
+
+    function renderStudentsMgmt() {
+      return `
+        <div class="admin-header">
+          <h1>👥 Student Management</h1>
+          <span style="color:var(--text-secondary);">Total: ${students.length} students</span>
+        </div>
+        <div class="admin-table-container">
+          <table class="admin-table">
+            <thead>
+              <tr><th>नाम</th><th>फ़ोन</th><th>कोर्स</th><th>Joined</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              ${students.map(s => `
+                <tr>
+                  <td style="font-weight:600;font-family:var(--font-hindi);">${s.name}</td>
+                  <td>${s.phone}</td>
+                  <td><span class="badge badge-primary" style="font-family:var(--font-hindi);">${s.course}</span></td>
+                  <td>${s.joined}</td>
+                  <td><span class="badge ${s.status === 'active' ? 'badge-success' : 'badge-warning'}">${s.status === 'active' ? 'Active' : 'Inactive'}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderDoubtsMgmt() {
+      return `
+        <div class="admin-header">
+          <h1>💬 Q&A Doubt Panel</h1>
+          <span class="badge badge-warning" style="font-size:0.9rem;padding:8px 16px;">⏳ ${doubts.filter(d => d.status === 'pending').length} Pending</span>
+        </div>
+        <div class="qna-list">
+          ${doubts.map(d => `
+            <div class="qna-item ${d.status}">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-sm);">
+                <div>
+                  <span style="font-weight:600;">${d.student}</span>
+                  <span class="badge badge-primary" style="margin-left:8px;">${d.category}</span>
+                </div>
+                <span class="badge ${d.status === 'resolved' ? 'badge-success' : 'badge-warning'}">${d.status === 'resolved' ? '✅ Resolved' : '⏳ Pending'}</span>
+              </div>
+              <div class="qna-question" style="font-family:var(--font-hindi);">${d.question}</div>
+              ${d.answer ? `<div class="qna-answer"><strong>✅ आपका उत्तर:</strong> ${d.answer}</div>` : `
+                <div style="margin-top:var(--space-md);display:flex;gap:var(--space-sm);">
+                  <input type="text" class="form-input" placeholder="उत्तर लिखें..." id="reply-${d.id}" style="flex:1;padding:10px 14px;">
+                  <button class="btn btn-primary btn-sm" onclick="replyDoubt(${d.id})">उत्तर दें</button>
+                </div>
+              `}
+              <div class="qna-meta"><span>${d.date}</span></div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderOffersMgmt() {
+      return `
+        <div class="admin-header">
+          <h1>🎁 Offer Management</h1>
+          <button class="btn btn-primary" onclick="showToast('Feature coming with Supabase integration!')">+ नया ऑफर बनाएं</button>
+        </div>
+        <div class="card" style="padding:var(--space-xl);">
+          <h3 style="margin-bottom:var(--space-lg);font-family:var(--font-hindi);">📢 Active Offers</h3>
+          <div style="padding:var(--space-lg);background:linear-gradient(135deg,var(--accent),#FF9A6C);border-radius:var(--radius-lg);color:white;margin-bottom:var(--space-lg);">
+            <h4 style="font-family:var(--font-hindi);margin-bottom:var(--space-sm);">🎉 स्पेशल ऑफर</h4>
+            <p style="opacity:0.9;font-size:0.9rem;">सभी ऑनलाइन टेस्ट सीरीज़ पर महाबचत ऑफर!</p>
+            <p style="font-size:0.85rem;margin-top:var(--space-sm);">समाप्ति: 30 April 2026</p>
+          </div>
+          <p style="color:var(--text-secondary);font-size:0.9rem;font-family:var(--font-hindi);">
+            💡 Supabase connect करने के बाद आप यहाँ से ऑफर create, edit और delete कर सकते हैं। Start/end date set karo, automatic banner website pe dikhega!
+          </p>
+        </div>
+      `;
+    }
+
+    function renderAnalytics() {
+      return `
+        <div class="admin-header"><h1>📈 Analytics</h1></div>
+        <div class="dashboard-stats">
+          <div class="dashboard-stat-card">
+            <div class="icon" style="background:var(--accent-light);color:var(--accent);">📈</div>
+            <div class="value">+23%</div>
+            <div class="label">इस माह छात्र वृद्धि</div>
+          </div>
+          <div class="dashboard-stat-card">
+            <div class="icon" style="background:var(--success-light);color:var(--success);">💰</div>
+            <div class="value">${formatPrice(38500)}</div>
+            <div class="label">इस माह राजस्व</div>
+          </div>
+          <div class="dashboard-stat-card">
+            <div class="icon" style="background:var(--info-light);color:var(--info);">📝</div>
+            <div class="value">142</div>
+            <div class="label">टेस्ट attempts इस माह</div>
+          </div>
+          <div class="dashboard-stat-card">
+            <div class="icon" style="background:var(--warning-light);color:var(--warning);">⭐</div>
+            <div class="value">4.8</div>
+            <div class="label">औसत रेटिंग</div>
+          </div>
+        </div>
+        <div class="card" style="padding:var(--space-xl);">
+          <h3 style="margin-bottom:var(--space-lg);font-family:var(--font-hindi);">🏆 Top Courses by Revenue</h3>
+          ${courses.slice(0, 5).map((c, i) => `
+            <div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md) 0;${i < 4 ? 'border-bottom:1px solid var(--border-light);' : ''}">
+              <span style="font-weight:800;color:var(--accent);font-size:1.1rem;width:30px;">#${i + 1}</span>
+              <div style="flex:1;font-family:var(--font-hindi);font-weight:500;">${c.title}</div>
+              <span style="font-weight:700;">${formatPrice(c.price * (Math.floor(Math.random() * 50) + 10))}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // --- Course CRUD ---
+    window.openCourseForm = function(course = null) {
+      editingCourse = course;
+      document.getElementById('courseFormTitle').textContent = course ? 'कोर्स एडिट करें' : 'नया कोर्स जोड़ें';
+      if (course) {
+        document.getElementById('cfTitle').value = course.title;
+        document.getElementById('cfDesc').value = course.description;
+        document.getElementById('cfPrice').value = course.price;
+        document.getElementById('cfOriginal').value = course.originalPrice;
+        document.getElementById('cfCategory').value = course.category;
+        document.getElementById('cfFeatures').value = course.features.join(', ');
+      }
+      document.getElementById('courseFormModal').classList.add('open');
+      document.getElementById('courseFormOverlay').classList.add('open');
+    };
+
+    window.closeCourseForm = function() {
+      document.getElementById('courseFormModal').classList.remove('open');
+      document.getElementById('courseFormOverlay').classList.remove('open');
+      editingCourse = null;
+    };
+
+    window.editCourse = function(id) {
+      const course = courses.find(c => c.id === id);
+      if (course) openCourseForm(course);
+    };
+
+    window.deleteCourse = function(id) {
+      if (!confirm('क्या आप इस कोर्स को हटाना चाहते हैं?')) return;
+      courses = courses.filter(c => c.id !== id);
+      showToast('🗑️ कोर्स हटा दिया गया!');
+      render();
+    };
+
+    window.saveCourse = function(e) {
+      e.preventDefault();
+      const price = parseInt(document.getElementById('cfPrice').value);
+      const original = parseInt(document.getElementById('cfOriginal').value);
+      const data = {
+        title: document.getElementById('cfTitle').value,
+        description: document.getElementById('cfDesc').value,
+        price,
+        originalPrice: original,
+        discount: Math.round((1 - price / original) * 100 * 100) / 100,
+        category: document.getElementById('cfCategory').value,
+        features: document.getElementById('cfFeatures').value.split(',').map(f => f.trim()).filter(Boolean),
+        gradient: 'linear-gradient(135deg, #1E3A5F, #2B4F7E)',
+        isNew: true,
+        isFeatured: false,
+      };
+
+      if (editingCourse) {
+        Object.assign(editingCourse, data);
+        showToast('✅ कोर्स अपडेट किया गया!');
+      } else {
+        data.id = Date.now();
+        courses.push(data);
+        showToast('✅ नया कोर्स जोड़ा गया!');
+      }
+
+      closeCourseForm();
+      render();
+    };
+
+    window.replyDoubt = function(id) {
+      const input = document.getElementById(`reply-${id}`);
+      if (!input || !input.value.trim()) return;
+      const doubt = doubts.find(d => d.id === id);
+      if (doubt) {
+        doubt.answer = input.value;
+        doubt.status = 'resolved';
+        showToast('✅ उत्तर भेज दिया गया!');
+        render();
+      }
+    };
+
+    window.setNav = function(nav) {
+      activeNav = nav;
+      render();
+    };
+
+    window.handleLogout = function() {
+      localStorage.removeItem('user');
+      showToast('👋 लॉगआउट सफल!');
+      setTimeout(() => window.location.href = '/login.html', 500);
+    };
+
+    function render() {
+      app.innerHTML = `
+        <div class="admin-layout">
+          <div class="admin-sidebar">
+            <div class="admin-sidebar-logo">
+              <div class="nav-logo-icon" style="width:36px;height:36px;font-size:0.9rem;">PC</div>
+              <div>
+                <div style="font-weight:700;font-size:0.95rem;">Admin Panel</div>
+                <div style="font-size:0.7rem;opacity:0.5;">प्रज्ञा क्लासेज</div>
+              </div>
+            </div>
+            ${renderNavItems()}
+            <div style="margin-top:auto;padding-top:var(--space-xl);border-top:1px solid rgba(255,255,255,0.1);">
+              <div class="admin-nav-item" onclick="window.location.href='/'">
+                <span>🌐</span><span>Website देखें</span>
+              </div>
+              <div class="admin-nav-item" onclick="handleLogout()" style="color:#EF4444;">
+                <span>🚪</span><span>Logout</span>
+              </div>
+            </div>
+          </div>
+          <div class="admin-main">
+            ${renderContent()}
+          </div>
+        </div>
+      `;
+    }
+
+    render();
+  </script>
+</body>
+</html>

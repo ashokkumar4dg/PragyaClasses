@@ -1,0 +1,82 @@
+import{o as e}from"./main-DPQfiBp-.js";var t=document.getElementById(`app`),n=`login`;function r(){t.innerHTML=`
+        <div class="login-page">
+          <!-- Floating decorative elements -->
+          <div style="position:absolute;top:10%;left:10%;font-size:3rem;opacity:0.1;animation:float 6s ease-in-out infinite;">📚</div>
+          <div style="position:absolute;bottom:15%;right:10%;font-size:3rem;opacity:0.1;animation:float 6s ease-in-out infinite 2s;">🎓</div>
+          <div style="position:absolute;top:40%;right:15%;font-size:2rem;opacity:0.1;animation:float 5s ease-in-out infinite 1s;">📝</div>
+
+          <div class="login-card animate-scale-in">
+            <div class="login-logo">
+              <a href="/" style="display:inline-flex;align-items:center;gap:var(--space-sm);text-decoration:none;">
+                <div class="nav-logo-icon" style="width:52px;height:52px;font-size:1.2rem;">PC</div>
+              </a>
+              <h2 style="font-family:var(--font-hindi);font-size:1.4rem;margin-top:var(--space-md);color:var(--primary);">प्रज्ञा क्लासेज बाड़मेर</h2>
+              <p style="font-size:0.88rem;color:var(--text-secondary);margin-top:4px;">अपने अकाउंट में लॉगिन करें</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="login-tabs">
+              <button class="login-tab ${n===`login`?`active`:``}" onclick="switchTab('login')">लॉगिन</button>
+              <button class="login-tab ${n===`register`?`active`:``}" onclick="switchTab('register')">रजिस्टर</button>
+            </div>
+
+            ${n===`login`?`
+              <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                  <label class="form-label" for="loginEmail">ईमेल या मोबाइल नंबर</label>
+                  <input type="text" id="loginEmail" class="form-input" placeholder="email@example.com या 98XXXXXXXX" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="loginPassword">पासवर्ड</label>
+                  <input type="password" id="loginPassword" class="form-input" placeholder="अपना पासवर्ड दर्ज करें" required>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);">
+                  <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--text-secondary);cursor:pointer;">
+                    <input type="checkbox" style="cursor:pointer;"> मुझे याद रखें
+                  </label>
+                  <a href="#" style="font-size:0.85rem;color:var(--accent);font-weight:500;">पासवर्ड भूल गए?</a>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg btn-full">
+                  लॉगिन करें
+                </button>
+              </form>
+            `:`
+              <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                  <label class="form-label" for="regName">पूरा नाम *</label>
+                  <input type="text" id="regName" class="form-input" placeholder="अपना पूरा नाम लिखें" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="regPhone">मोबाइल नंबर *</label>
+                  <div class="phone-input-group">
+                    <span class="phone-prefix">+91</span>
+                    <input type="tel" id="regPhone" placeholder="98XXXXXXXX" required pattern="[0-9]{10}" maxlength="10" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="regEmail">ईमेल *</label>
+                  <input type="email" id="regEmail" class="form-input" placeholder="email@example.com" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="regPassword">पासवर्ड *</label>
+                  <input type="password" id="regPassword" class="form-input" placeholder="कम से कम 6 अक्षर" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg btn-full">
+                  रजिस्टर करें
+                </button>
+              </form>
+            `}
+
+            <div class="login-divider">या</div>
+
+            <button class="btn btn-outline btn-full" style="gap:var(--space-sm);" onclick="handleGoogleLogin()">
+              <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Google से लॉगिन
+            </button>
+
+            <p style="text-align:center;margin-top:var(--space-lg);font-size:0.82rem;color:var(--text-muted);">
+              लॉगिन करके आप हमारी <a href="#" style="color:var(--accent);">शर्तें</a> और <a href="#" style="color:var(--accent);">गोपनीयता नीति</a> स्वीकार करते हैं।
+            </p>
+          </div>
+        </div>
+      `}window.switchTab=function(e){n=e,r()},window.handleLogin=function(t){t.preventDefault();let n=document.getElementById(`loginEmail`).value,r=document.getElementById(`loginPassword`).value;if(n===`admin`&&r===`admin`){localStorage.setItem(`user`,JSON.stringify({name:`Admin`,role:`admin`,email:`admin@pragyaclasses.com`})),e(`✅ Admin लॉगिन सफल!`),setTimeout(()=>window.location.href=`/admin.html`,1e3);return}localStorage.setItem(`user`,JSON.stringify({name:`Student`,role:`student`,email:n,phone:n})),e(`✅ लॉगिन सफल! Dashboard पर जा रहे हैं...`),setTimeout(()=>window.location.href=`/dashboard.html`,1e3)},window.handleRegister=function(t){t.preventDefault();let n=document.getElementById(`regName`).value,r=document.getElementById(`regPhone`).value,i=document.getElementById(`regEmail`).value;localStorage.setItem(`user`,JSON.stringify({name:n,role:`student`,email:i,phone:r})),e(`✅ रजिस्ट्रेशन सफल! Dashboard पर जा रहे हैं...`),setTimeout(()=>window.location.href=`/dashboard.html`,1e3)},window.handleGoogleLogin=function(){localStorage.setItem(`user`,JSON.stringify({name:`Google User`,role:`student`,email:`user@gmail.com`})),e(`✅ Google लॉगिन सफल!`),setTimeout(()=>window.location.href=`/dashboard.html`,1e3)};var i=JSON.parse(localStorage.getItem(`user`)||`null`);i?window.location.href=i.role===`admin`?`/admin.html`:`/dashboard.html`:r();

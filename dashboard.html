@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard — प्रज्ञा क्लासेज बाड़मेर</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='15' width='100' height='100' fill='%231E3A5F'/><text x='50' y='65' font-size='45' font-weight='bold' fill='white' text-anchor='middle' font-family='sans-serif'>PC</text></svg>">
+  <link rel="stylesheet" href="/css/index.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/pages.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { showToast } from '/js/main.js';
+    import { COURSES, FREE_RESOURCES } from '/js/data.js';
+
+    // Auth check
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (!user || user.role === 'admin') {
+      window.location.href = '/login.html';
+    }
+
+    const app = document.getElementById('app');
+    let activeSection = 'overview';
+
+    // Mock student data
+    const studentData = {
+      coursesEnrolled: 2,
+      testsCompleted: 8,
+      avgScore: 72,
+      studyHours: 45,
+      recentTests: [
+        { name: 'हिंदी व्याकरण टेस्ट #5', score: 82, total: 100, date: '07 Apr 2026' },
+        { name: 'अलंकार MCQ टेस्ट', score: 68, total: 100, date: '04 Apr 2026' },
+        { name: 'समास प्रैक्टिस टेस्ट', score: 75, total: 100, date: '01 Apr 2026' },
+        { name: 'रस पहचान टेस्ट', score: 90, total: 100, date: '28 Mar 2026' },
+      ],
+      topicStrength: {
+        'उपसर्ग-प्रत्यय': 85,
+        'समास': 72,
+        'अलंकार': 65,
+        'रस': 90,
+        'छंद': 55,
+        'संधि': 78,
+        'साहित्य इतिहास': 70,
+      },
+      weakTopics: ['छंद', 'अलंकार'],
+    };
+
+    function renderSidebar() {
+      const items = [
+        { id: 'overview', icon: '📊', label: 'ओवरव्यू' },
+        { id: 'courses', icon: '📚', label: 'मेरे कोर्स' },
+        { id: 'tests', icon: '📝', label: 'टेस्ट रिजल्ट' },
+        { id: 'notes', icon: '📄', label: 'नोट्स' },
+        { id: 'doubts', icon: '💬', label: 'डाउट्स' },
+      ];
+      return `
+        <div class="dashboard-sidebar">
+          ${items.map(it => `
+            <div class="dashboard-sidebar-item ${activeSection === it.id ? 'active' : ''}" onclick="setSection('${it.id}')">
+              <span>${it.icon}</span>
+              <span>${it.label}</span>
+            </div>
+          `).join('')}
+          <div class="dashboard-sidebar-item" onclick="handleLogout()" style="color:var(--danger);margin-top:auto;">
+            <span>🚪</span>
+            <span>लॉगआउट</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMainContent() {
+      switch(activeSection) {
+        case 'overview': return renderOverview();
+        case 'courses': return renderMyCourses();
+        case 'tests': return renderTests();
+        case 'notes': return renderNotes();
+        case 'doubts': return renderDoubts();
+        default: return renderOverview();
+      }
+    }
+
+    function renderOverview() {
+      return `
+        <!-- Welcome -->
+        <div class="dashboard-welcome">
+          <h2 style="font-family:var(--font-hindi);">🙏 नमस्कार, ${user.name}!</h2>
+          <p>आज भी तैयारी जारी रखें — सफलता पास है!</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="dashboard-stats">
+          <div class="dashboard-stat-card">
+            <div class="icon" style="background:var(--accent-light);color:var(--accent);">📚</div>
+            <div class="value">${studentData.coursesEnrolled}</div>
+            <div class="label">कोर्स एनरोल</div>
+          </div>
+          <div class="dashboard-stat-card">
+            <div class="icon" style="background:var(--success-light);color:var(--success);">📝</div>
+            <div class="value">${studentData.testsCompleted}</div>
+            <div class="label">टेस्ट पूरे</div>
+          </div>
+          <div class="dashboard-stat-card">
+            <div class="icon" style="background:var(--info-light);color:var(--info);">📈</div>
+            <div class="value">${studentData.avgScore}%</div>
+            <div class="label">औसत स्कोर</div>
+          </div>
+          <div class="dashboard-stat-card">
+            <div class="icon" style="background:var(--warning-light);color:var(--warning);">⏰</div>
+            <div class="value">${studentData.studyHours}h</div>
+            <div class="label">पढ़ाई के घंटे</div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-xl);margin-bottom:var(--space-xl);">
+          <div class="card" style="padding:var(--space-xl);">
+            <h4 style="margin-bottom:var(--space-lg);font-family:var(--font-hindi);">📊 Topic-wise Strength</h4>
+            <canvas id="topicChart" height="250"></canvas>
+          </div>
+          <div class="card" style="padding:var(--space-xl);">
+            <h4 style="margin-bottom:var(--space-lg);font-family:var(--font-hindi);">📈 Score Trend</h4>
+            <canvas id="scoreChart" height="250"></canvas>
+          </div>
+        </div>
+
+        <!-- AI Recommendation -->
+        <div style="background:linear-gradient(135deg,#8B5CF6,#A78BFA);border-radius:var(--radius-lg);padding:var(--space-xl);color:white;margin-bottom:var(--space-xl);">
+          <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md);">
+            <span style="font-size:1.5rem;">🤖</span>
+            <h4 style="font-family:var(--font-hindi);">AI सुझाव — आगे क्या पढ़ें?</h4>
+          </div>
+          <div style="display:flex;gap:var(--space-md);flex-wrap:wrap;">
+            ${studentData.weakTopics.map(t => `
+              <div style="background:rgba(255,255,255,0.15);padding:var(--space-md) var(--space-lg);border-radius:var(--radius-md);backdrop-filter:blur(10px);">
+                <div style="font-weight:600;font-family:var(--font-hindi);">📌 ${t}</div>
+                <div style="font-size:0.82rem;opacity:0.8;">कमज़ोर — अभ्यास करें</div>
+              </div>
+            `).join('')}
+          </div>
+          <a href="/test-series.html" style="display:inline-block;margin-top:var(--space-md);background:white;color:#8B5CF6;padding:10px 24px;border-radius:var(--radius-md);font-weight:600;font-size:0.9rem;">प्रैक्टिस टेस्ट दें →</a>
+        </div>
+
+        <!-- Recent Tests -->
+        <div class="dashboard-section">
+          <div class="dashboard-section-header">
+            <h3 class="dashboard-section-title" style="font-family:var(--font-hindi);">📝 हाल के टेस्ट रिज़ल्ट</h3>
+            <button class="btn btn-ghost btn-sm" onclick="setSection('tests')">सभी देखें →</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
+            ${studentData.recentTests.map(t => `
+              <div class="card" style="padding:var(--space-md) var(--space-lg);display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div style="font-weight:600;font-family:var(--font-hindi);font-size:0.92rem;">${t.name}</div>
+                  <div style="font-size:0.78rem;color:var(--text-secondary);">${t.date}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-md);">
+                  <div class="progress-bar" style="width:100px;height:6px;">
+                    <div class="progress-fill" style="width:${t.score}%;background:${t.score >= 75 ? 'var(--success)' : t.score >= 50 ? 'var(--warning)' : 'var(--danger)'}"></div>
+                  </div>
+                  <span style="font-weight:700;font-size:0.95rem;color:${t.score >= 75 ? 'var(--success)' : t.score >= 50 ? 'var(--warning)' : 'var(--danger)'};">${t.score}%</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMyCourses() {
+      const enrolled = COURSES.slice(0, 2);
+      return `
+        <h2 style="font-family:var(--font-hindi);margin-bottom:var(--space-xl);">📚 मेरे कोर्स</h2>
+        <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+          ${enrolled.map((c, i) => `
+            <div class="card" style="padding:var(--space-xl);display:flex;gap:var(--space-xl);align-items:center;">
+              <div style="width:120px;height:80px;background:${c.gradient};border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:white;font-family:var(--font-hindi);font-size:0.8rem;text-align:center;padding:8px;flex-shrink:0;">${c.title.substring(0, 20)}...</div>
+              <div style="flex:1;">
+                <h4 style="font-family:var(--font-hindi);margin-bottom:var(--space-sm);">${c.title}</h4>
+                <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-sm);">
+                  <span style="font-size:0.82rem;color:var(--text-secondary);">Progress: ${30 + i * 25}%</span>
+                </div>
+                <div class="progress-bar" style="height:8px;">
+                  <div class="progress-fill" style="width:${30 + i * 25}%"></div>
+                </div>
+              </div>
+              <a href="/test-series.html" class="btn btn-primary btn-sm">जारी रखें →</a>
+            </div>
+          `).join('')}
+        </div>
+        <div style="text-align:center;margin-top:var(--space-2xl);padding:var(--space-xl);background:var(--primary-bg);border-radius:var(--radius-lg);">
+          <p style="color:var(--text-secondary);margin-bottom:var(--space-md);font-family:var(--font-hindi);">और कोर्स जोड़ें?</p>
+          <a href="/courses.html" class="btn btn-primary">नए कोर्स देखें →</a>
+        </div>
+      `;
+    }
+
+    function renderTests() {
+      return `
+        <h2 style="font-family:var(--font-hindi);margin-bottom:var(--space-xl);">📝 सभी टेस्ट रिज़ल्ट</h2>
+        <div class="admin-table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>टेस्ट का नाम</th>
+                <th>स्कोर</th>
+                <th>प्रतिशत</th>
+                <th>तारीख</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${studentData.recentTests.map(t => `
+                <tr>
+                  <td style="font-family:var(--font-hindi);">${t.name}</td>
+                  <td>${t.score}/${t.total}</td>
+                  <td><span class="badge ${t.score >= 75 ? 'badge-success' : t.score >= 50 ? 'badge-warning' : 'badge-danger'}">${t.score}%</span></td>
+                  <td>${t.date}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div style="text-align:center;margin-top:var(--space-xl);">
+          <a href="/test-series.html" class="btn btn-primary">नया टेस्ट दें →</a>
+        </div>
+      `;
+    }
+
+    function renderNotes() {
+      return `
+        <h2 style="font-family:var(--font-hindi);margin-bottom:var(--space-xl);">📄 मेरे नोट्स & डाउनलोड</h2>
+        <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+          ${FREE_RESOURCES.pdfs.map(pdf => `
+            <div class="resource-card">
+              <div class="resource-icon pdf">📄</div>
+              <div style="flex:1;">
+                <h4 style="font-family:var(--font-hindi);font-size:0.95rem;margin-bottom:4px;">${pdf.title}</h4>
+                <span style="font-size:0.8rem;color:var(--text-secondary);">📑 ${pdf.pages} पेज • 💾 ${pdf.size}</span>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="alert('📥 डाउनलोड शुरू! (Demo)')">📥 डाउनलोड</button>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderDoubts() {
+      const doubts = [
+        { q: 'उत्प्रेक्षा और उपमा अलंकार में क्या अंतर है?', status: 'resolved', answer: 'उपमा में "सा", "जैसा" आते हैं जबकि उत्प्रेक्षा में "मानो", "जानो", "जनु" आते हैं। उपमा में तुलना होती है, उत्प्रेक्षा में सम्भावना।', date: '06 Apr 2026' },
+        { q: 'रीतिकाल को "श्रृंगार काल" क्यों कहा जाता है?', status: 'pending', answer: '', date: '08 Apr 2026' },
+      ];
+      return `
+        <h2 style="font-family:var(--font-hindi);margin-bottom:var(--space-xl);">💬 मेरे डाउट्स</h2>
+        
+        <!-- Ask Doubt -->
+        <div class="card" style="padding:var(--space-xl);margin-bottom:var(--space-xl);">
+          <h4 style="font-family:var(--font-hindi);margin-bottom:var(--space-md);">🙋 नया डाउट पूछें</h4>
+          <div style="display:flex;gap:var(--space-md);">
+            <input type="text" class="form-input" placeholder="अपना सवाल यहाँ लिखें..." style="flex:1;" id="doubtInput">
+            <button class="btn btn-primary" onclick="askDoubt()">भेजें</button>
+          </div>
+        </div>
+
+        <!-- Doubts List -->
+        <div class="qna-list">
+          ${doubts.map(d => `
+            <div class="qna-item ${d.status}">
+              <div class="qna-question">${d.q}</div>
+              ${d.answer ? `<div class="qna-answer"><strong>👨‍🏫 उत्तर:</strong> ${d.answer}</div>` : `<div style="padding:var(--space-sm) var(--space-md);background:var(--warning-light);border-radius:var(--radius-sm);font-size:0.85rem;color:var(--warning);display:inline-block;">⏳ उत्तर की प्रतीक्षा...</div>`}
+              <div class="qna-meta">
+                <span>${d.date}</span>
+                <span class="badge ${d.status === 'resolved' ? 'badge-success' : 'badge-warning'}">${d.status === 'resolved' ? '✅ हल किया' : '⏳ प्रतीक्षा'}</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    window.askDoubt = function() {
+      const input = document.getElementById('doubtInput');
+      if (!input.value.trim()) return;
+      showToast('✅ आपका सवाल भेजा गया! जल्द उत्तर मिलेगा।');
+      input.value = '';
+    };
+
+    window.setSection = function(section) {
+      activeSection = section;
+      render();
+    };
+
+    window.handleLogout = function() {
+      localStorage.removeItem('user');
+      showToast('👋 लॉगआउट सफल!');
+      setTimeout(() => window.location.href = '/login.html', 500);
+    };
+
+    function render() {
+      app.innerHTML = `
+        <div class="dashboard">
+          <nav class="navbar scrolled" style="background:var(--bg-card);">
+            <div class="nav-container">
+              <a href="/" class="nav-logo">
+                <div class="nav-logo-icon">PC</div>
+                <div class="nav-logo-text">
+                  <span>प्रज्ञा क्लासेज</span>
+                  <span>DASHBOARD</span>
+                </div>
+              </a>
+              <div style="display:flex;align-items:center;gap:var(--space-md);">
+                <span style="font-size:0.9rem;color:var(--text-secondary);">🙏 ${user.name}</span>
+                <div style="width:36px;height:36px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.85rem;">${user.name.charAt(0)}</div>
+              </div>
+            </div>
+          </nav>
+
+          <div class="dashboard-grid">
+            ${renderSidebar()}
+            <div class="dashboard-main">
+              ${renderMainContent()}
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Render charts if on overview
+      if (activeSection === 'overview') {
+        setTimeout(renderCharts, 100);
+      }
+    }
+
+    function renderCharts() {
+      // Topic Strength Radar Chart
+      const topicCtx = document.getElementById('topicChart');
+      if (topicCtx) {
+        new Chart(topicCtx, {
+          type: 'radar',
+          data: {
+            labels: Object.keys(studentData.topicStrength),
+            datasets: [{
+              label: 'आपका स्कोर',
+              data: Object.values(studentData.topicStrength),
+              backgroundColor: 'rgba(255, 107, 53, 0.15)',
+              borderColor: '#FF6B35',
+              borderWidth: 2,
+              pointBackgroundColor: '#FF6B35',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              r: {
+                beginAtZero: true,
+                max: 100,
+                ticks: { display: false },
+                grid: { color: 'rgba(0,0,0,0.05)' },
+                pointLabels: { font: { size: 11, family: 'Noto Sans Devanagari' } },
+              }
+            },
+            plugins: { legend: { display: false } },
+          }
+        });
+      }
+
+      // Score Trend Line Chart
+      const scoreCtx = document.getElementById('scoreChart');
+      if (scoreCtx) {
+        new Chart(scoreCtx, {
+          type: 'line',
+          data: {
+            labels: ['टेस्ट 1', 'टेस्ट 2', 'टेस्ट 3', 'टेस्ट 4', 'टेस्ट 5', 'टेस्ट 6', 'टेस्ट 7', 'टेस्ट 8'],
+            datasets: [{
+              label: 'आपका स्कोर',
+              data: [55, 62, 58, 70, 68, 75, 82, 72],
+              borderColor: '#FF6B35',
+              backgroundColor: 'rgba(255, 107, 53, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4,
+              pointBackgroundColor: '#FF6B35',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              pointRadius: 5,
+            }, {
+              label: 'कक्षा औसत',
+              data: [50, 52, 55, 58, 60, 62, 65, 68],
+              borderColor: '#94A3B8',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              fill: false,
+              tension: 0.4,
+              pointRadius: 0,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,0.05)' } },
+              x: { grid: { display: false }, ticks: { font: { family: 'Noto Sans Devanagari' } } },
+            },
+            plugins: {
+              legend: { labels: { font: { family: 'Noto Sans Devanagari' } } }
+            },
+          }
+        });
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>

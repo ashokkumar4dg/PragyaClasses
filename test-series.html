@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>टेस्ट सीरीज़ — प्रज्ञा क्लासेज बाड़मेर</title>
+  <meta name="description" content="हिंदी विषय की ऑनलाइन टेस्ट सीरीज़। Timer-based MCQ tests with instant results.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='15' width='100' height='100' fill='%231E3A5F'/><text x='50' y='65' font-size='45' font-weight='bold' fill='white' text-anchor='middle' font-family='sans-serif'>PC</text></svg>">
+  <link rel="stylesheet" href="/css/index.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/pages.css">
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { renderNavbar, renderFooter, renderWhatsAppFab, initApp, formatPrice, showToast } from '/js/main.js';
+    import { COURSES, DEMO_QUESTIONS, getWhatsAppPaymentLink } from '/js/data.js';
+
+    const app = document.getElementById('app');
+    const testCourses = COURSES.filter(c => c.features.some(f => f.includes('टेस्ट')));
+
+    // Test Engine State
+    let testState = {
+      active: false,
+      questions: [],
+      currentQ: 0,
+      answers: {},
+      marked: new Set(),
+      timeLeft: 0,
+      timerId: null,
+      startTime: null,
+    };
+
+    function renderCatalog() {
+      app.innerHTML = `
+        ${renderNavbar()}
+        <div class="courses-page">
+          <div class="container section">
+            <div class="section-header">
+              <div class="section-label">टेस्ट सीरीज़</div>
+              <h1 class="section-title">ऑनलाइन <span>टेस्ट सीरीज़</span></h1>
+              <p class="section-desc">Timer-based MCQ test के साथ instant result, rank और topic-wise analysis</p>
+            </div>
+
+            <!-- Free Demo Test Banner -->
+            <div style="background:linear-gradient(135deg,var(--success),#34D399);border-radius:var(--radius-xl);padding:var(--space-2xl);color:white;margin-bottom:var(--space-2xl);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-lg);">
+              <div>
+                <h3 style="font-size:1.3rem;font-family:var(--font-hindi);margin-bottom:var(--space-sm);">🎯 फ्री डेमो टेस्ट</h3>
+                <p style="opacity:0.9;">15 प्रश्न | 15 मिनट | हिंदी व्याकरण & साहित्य | Instant Result</p>
+              </div>
+              <button class="btn btn-lg" style="background:white;color:var(--success);" onclick="startDemoTest()">
+                अभी टेस्ट दें →
+              </button>
+            </div>
+
+            <!-- Paid Test Series -->
+            <div class="test-catalog">
+              ${testCourses.map((course, i) => `
+                <div class="test-card reveal reveal-delay-${(i % 4) + 1}">
+                  <div class="test-card-header">
+                    <div>
+                      <h3 class="test-card-title">${course.title}</h3>
+                      <p style="font-size:0.82rem;color:var(--text-secondary);margin-top:4px;">${course.description}</p>
+                    </div>
+                    ${course.isNew ? '<span class="badge badge-danger">New</span>' : ''}
+                  </div>
+                  <div class="test-card-stats">
+                    ${course.features.slice(0, 3).map(f => {
+                      const parts = f.split(' ');
+                      return `<div class="test-card-stat"><div class="stat-val">${parts[0]}</div><div class="stat-lbl">${parts.slice(1).join(' ')}</div></div>`;
+                    }).join('')}
+                  </div>
+                  <div class="test-card-footer">
+                    <div class="course-card-price" style="margin:0;">
+                      <span class="current">${formatPrice(course.price)}</span>
+                      <span class="original">${formatPrice(course.originalPrice)}</span>
+                      <span class="discount">${course.discount}% OFF</span>
+                    </div>
+                    <a href="${getWhatsAppPaymentLink(course.title, course.price)}" target="_blank" class="btn btn-primary btn-sm">खरीदें</a>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+        ${renderFooter()}
+        ${renderWhatsAppFab()}
+      `;
+      initApp();
+    }
+
+    window.startDemoTest = function() {
+      testState = {
+        active: true,
+        questions: [...DEMO_QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 15),
+        currentQ: 0,
+        answers: {},
+        marked: new Set(),
+        timeLeft: 15 * 60,
+        timerId: null,
+        startTime: Date.now(),
+      };
+      renderTest();
+      startTimer();
+    };
+
+    function startTimer() {
+      testState.timerId = setInterval(() => {
+        testState.timeLeft--;
+        updateTimerDisplay();
+        if (testState.timeLeft <= 0) {
+          clearInterval(testState.timerId);
+          submitTest();
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const el = document.getElementById('testTimer');
+      if (!el) return;
+      const mins = Math.floor(testState.timeLeft / 60);
+      const secs = testState.timeLeft % 60;
+      el.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      el.className = 'test-timer' + (testState.timeLeft <= 60 ? ' danger' : testState.timeLeft <= 300 ? ' warning' : '');
+    }
+
+    function renderTest() {
+      const q = testState.questions[testState.currentQ];
+      const total = testState.questions.length;
+      const answered = Object.keys(testState.answers).length;
+
+      app.innerHTML = `
+        <div class="test-engine">
+          <div class="test-header">
+            <div>
+              <h3 style="font-size:1rem;font-weight:700;">📝 फ्री डेमो टेस्ट — हिंदी व्याकरण & साहित्य</h3>
+              <p style="font-size:0.8rem;color:var(--text-secondary);">${answered}/${total} answered</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:var(--space-lg);">
+              <div class="test-timer" id="testTimer">15:00</div>
+              <button class="btn btn-primary btn-sm" onclick="submitTest()">सबमिट करें</button>
+            </div>
+          </div>
+
+          <div class="test-body">
+            <div class="test-question-area">
+              <div class="test-question-number">
+                प्रश्न ${testState.currentQ + 1} / ${total}
+                ${testState.marked.has(testState.currentQ) ? '<span class="badge badge-warning" style="margin-left:8px;">📌 Marked</span>' : ''}
+                <span class="badge badge-primary" style="margin-left:8px;">${q.topic}</span>
+              </div>
+              <div class="test-question-text">${q.question}</div>
+              <div class="test-options">
+                ${q.options.map((opt, i) => `
+                  <div class="test-option ${testState.answers[testState.currentQ] === i ? 'selected' : ''}" onclick="selectOption(${i})">
+                    <div class="test-option-label">${String.fromCharCode(65 + i)}</div>
+                    <div>${opt}</div>
+                  </div>
+                `).join('')}
+              </div>
+              <div class="test-question-nav">
+                <div style="display:flex;gap:var(--space-sm);">
+                  <button class="btn btn-ghost btn-sm" onclick="navigateQ(${testState.currentQ - 1})" ${testState.currentQ === 0 ? 'disabled style="opacity:0.4"' : ''}>← पिछला</button>
+                  <button class="btn btn-ghost btn-sm" onclick="toggleMark()" style="color:var(--warning);">📌 ${testState.marked.has(testState.currentQ) ? 'Unmark' : 'Mark for Review'}</button>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="navigateQ(${testState.currentQ + 1})" ${testState.currentQ === total - 1 ? 'disabled style="opacity:0.4"' : ''}>अगला →</button>
+              </div>
+            </div>
+
+            <div class="test-sidebar" id="testSidebar">
+              <div class="test-sidebar-title" onclick="document.getElementById('testSidebar').classList.toggle('expanded')">
+                प्रश्न नेविगेशन ▼
+              </div>
+              <div class="test-question-grid">
+                ${testState.questions.map((_, i) => `
+                  <button class="test-q-btn ${i === testState.currentQ ? 'current' : ''} ${testState.answers[i] !== undefined ? 'answered' : ''} ${testState.marked.has(i) ? 'marked' : ''}" onclick="navigateQ(${i})">${i + 1}</button>
+                `).join('')}
+              </div>
+              <div class="test-legend">
+                <div class="test-legend-item"><div class="test-legend-dot" style="background:var(--primary);"></div> वर्तमान</div>
+                <div class="test-legend-item"><div class="test-legend-dot" style="background:var(--success);"></div> उत्तर दिया</div>
+                <div class="test-legend-item"><div class="test-legend-dot" style="background:var(--warning);"></div> मार्क किया</div>
+                <div class="test-legend-item"><div class="test-legend-dot" style="background:var(--border-light);"></div> छोड़ा</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      updateTimerDisplay();
+    }
+
+    window.selectOption = function(optIdx) {
+      testState.answers[testState.currentQ] = optIdx;
+      renderTest();
+    };
+
+    window.navigateQ = function(idx) {
+      if (idx < 0 || idx >= testState.questions.length) return;
+      testState.currentQ = idx;
+      renderTest();
+    };
+
+    window.toggleMark = function() {
+      if (testState.marked.has(testState.currentQ)) {
+        testState.marked.delete(testState.currentQ);
+      } else {
+        testState.marked.add(testState.currentQ);
+      }
+      renderTest();
+    };
+
+    window.submitTest = function() {
+      if (!confirm('क्या आप टेस्ट सबमिट करना चाहते हैं?')) return;
+      clearInterval(testState.timerId);
+      const timeTaken = Math.round((Date.now() - testState.startTime) / 1000);
+      showResults(timeTaken);
+    };
+
+    function showResults(timeTaken) {
+      let correct = 0, wrong = 0, skipped = 0;
+      const topicWise = {};
+
+      testState.questions.forEach((q, i) => {
+        if (!topicWise[q.topic]) topicWise[q.topic] = { correct: 0, total: 0 };
+        topicWise[q.topic].total++;
+
+        if (testState.answers[i] === undefined) {
+          skipped++;
+        } else if (testState.answers[i] === q.correct) {
+          correct++;
+          topicWise[q.topic].correct++;
+        } else {
+          wrong++;
+        }
+      });
+
+      const total = testState.questions.length;
+      const percentage = Math.round((correct / total) * 100);
+      const rank = Math.floor(Math.random() * 50) + 1;
+      const circumference = 2 * Math.PI * 75;
+      const offset = circumference - (percentage / 100) * circumference;
+      const timeMins = Math.floor(timeTaken / 60);
+      const timeSecs = timeTaken % 60;
+
+      const scoreColor = percentage >= 70 ? 'var(--success)' : percentage >= 40 ? 'var(--warning)' : 'var(--danger)';
+
+      app.innerHTML = `
+        ${renderNavbar()}
+        <div class="result-page section">
+          <div class="container">
+            <div class="result-card animate-scale-in">
+              <div style="font-size:3rem;margin-bottom:var(--space-md);">${percentage >= 70 ? '🎉' : percentage >= 40 ? '👍' : '💪'}</div>
+              <h2 style="font-size:1.5rem;margin-bottom:var(--space-sm);font-family:var(--font-hindi);">
+                ${percentage >= 70 ? 'शानदार प्रदर्शन!' : percentage >= 40 ? 'अच्छा प्रयास!' : 'और मेहनत करें!'}
+              </h2>
+
+              <div class="result-score-ring">
+                <svg viewBox="0 0 170 170">
+                  <circle class="bg-ring" cx="85" cy="85" r="75"/>
+                  <circle class="score-ring" cx="85" cy="85" r="75" stroke="${scoreColor}" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" style="transition:stroke-dashoffset 1.5s ease;"/>
+                </svg>
+                <div class="result-score-text">
+                  <div class="score">${percentage}%</div>
+                  <div class="total">${correct}/${total}</div>
+                </div>
+              </div>
+
+              <div class="result-breakdown">
+                <div class="result-breakdown-item" style="background:var(--success-light);">
+                  <div class="value" style="color:var(--success);">${correct}</div>
+                  <div class="label">सही ✅</div>
+                </div>
+                <div class="result-breakdown-item" style="background:var(--danger-light);">
+                  <div class="value" style="color:var(--danger);">${wrong}</div>
+                  <div class="label">गलत ❌</div>
+                </div>
+                <div class="result-breakdown-item" style="background:var(--warning-light);">
+                  <div class="value" style="color:var(--warning);">${skipped}</div>
+                  <div class="label">छोड़ा ⏭️</div>
+                </div>
+              </div>
+
+              <div style="display:flex;justify-content:space-around;margin-bottom:var(--space-xl);padding:var(--space-md);background:var(--bg-primary);border-radius:var(--radius-md);">
+                <div class="text-center"><div style="font-weight:700;font-size:1.1rem;">Rank #${rank}</div><div style="font-size:0.78rem;color:var(--text-secondary);">आपकी रैंक</div></div>
+                <div class="text-center"><div style="font-weight:700;font-size:1.1rem;">${timeMins}:${String(timeSecs).padStart(2,'0')}</div><div style="font-size:0.78rem;color:var(--text-secondary);">समय लिया</div></div>
+              </div>
+
+              <!-- Topic-wise Analysis -->
+              <h4 style="text-align:left;margin-bottom:var(--space-md);font-family:var(--font-hindi);">📊 Topic-wise Analysis</h4>
+              <div style="margin-bottom:var(--space-xl);">
+                ${Object.entries(topicWise).map(([topic, data]) => {
+                  const pct = Math.round((data.correct / data.total) * 100);
+                  return `
+                    <div style="margin-bottom:var(--space-md);">
+                      <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.85rem;">
+                        <span style="font-family:var(--font-hindi);">${topic}</span>
+                        <span style="font-weight:600;">${data.correct}/${data.total} (${pct}%)</span>
+                      </div>
+                      <div class="progress-bar">
+                        <div class="progress-fill" style="width:${pct}%;background:${pct >= 70 ? 'var(--success)' : pct >= 40 ? 'var(--warning)' : 'var(--danger)'}"></div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+
+              <!-- Show Answers -->
+              <details style="text-align:left;margin-bottom:var(--space-xl);">
+                <summary style="cursor:pointer;font-weight:600;padding:var(--space-md);background:var(--bg-primary);border-radius:var(--radius-md);font-family:var(--font-hindi);">📋 सभी उत्तर देखें</summary>
+                <div style="padding:var(--space-md);">
+                  ${testState.questions.map((q, i) => {
+                    const userAns = testState.answers[i];
+                    const isCorrect = userAns === q.correct;
+                    const isSkipped = userAns === undefined;
+                    return `
+                      <div style="padding:var(--space-md);margin-bottom:var(--space-sm);border-left:4px solid ${isSkipped ? 'var(--warning)' : isCorrect ? 'var(--success)' : 'var(--danger)'};background:var(--bg-primary);border-radius:0 var(--radius-sm) var(--radius-sm) 0;">
+                        <div style="font-weight:600;font-family:var(--font-hindi);margin-bottom:4px;">Q${i+1}. ${q.question}</div>
+                        <div style="font-size:0.85rem;color:var(--success);">✅ सही उत्तर: ${q.options[q.correct]}</div>
+                        ${!isSkipped && !isCorrect ? `<div style="font-size:0.85rem;color:var(--danger);">❌ आपका उत्तर: ${q.options[userAns]}</div>` : ''}
+                        ${isSkipped ? `<div style="font-size:0.85rem;color:var(--warning);">⏭️ छोड़ दिया</div>` : ''}
+                        <div style="font-size:0.82rem;color:var(--text-secondary);margin-top:4px;font-family:var(--font-hindi);">💡 ${q.explanation}</div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </details>
+
+              <div style="display:flex;gap:var(--space-md);flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="startDemoTest()">🔄 दोबारा टेस्ट दें</button>
+                <a href="/courses.html" class="btn btn-secondary">📚 Full Course खरीदें</a>
+                <a href="/test-series.html" class="btn btn-outline" onclick="location.reload()">← वापस जाएँ</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        ${renderFooter()}
+      `;
+      initApp();
+    }
+
+    // Initial render
+    renderCatalog();
+  </script>
+</body>
+</html>

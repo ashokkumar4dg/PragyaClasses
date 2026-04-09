@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>हमारे बारे में — प्रज्ञा क्लासेज बाड़मेर</title>
+  <meta name="description" content="प्रज्ञा क्लासेज बाड़मेर — 2014 से हिंदी विषय की सर्वश्रेष्ठ कोचिंग। Dr. B.L. Dhanday के मार्गदर्शन में।">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='15' width='100' height='100' fill='%231E3A5F'/><text x='50' y='65' font-size='45' font-weight='bold' fill='white' text-anchor='middle' font-family='sans-serif'>PC</text></svg>">
+  <link rel="stylesheet" href="/css/index.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/pages.css">
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { renderNavbar, renderFooter, renderWhatsAppFab, initApp } from '/js/main.js';
+    import { CONTACT } from '/js/data.js';
+
+    const app = document.getElementById('app');
+
+    app.innerHTML = `
+      ${renderNavbar()}
+
+      <!-- About Hero -->
+      <section class="about-hero">
+        <div class="container">
+          <div class="section-label" style="color:rgba(255,255,255,0.7);">हमारे बारे में</div>
+          <h1 style="font-size:2.8rem;font-family:var(--font-hindi);margin-bottom:var(--space-md);">प्रज्ञा क्लासेज बाड़मेर</h1>
+          <p style="font-size:1.15rem;opacity:0.8;max-width:600px;margin:0 auto;">
+            2014 से हिंदी भाषा-व्याकरण, काव्यशास्त्र और साहित्येतिहास की सर्वश्रेष्ठ कोचिंग
+          </p>
+        </div>
+      </section>
+
+      <!-- Stats Bar -->
+      <section style="background:var(--bg-card);padding:var(--space-2xl) 0;margin-top:-1px;">
+        <div class="container">
+          <div class="grid-4" style="text-align:center;">
+            <div class="stat-card reveal">
+              <div class="stat-number"><span data-count="10000" data-suffix="+">0</span></div>
+              <div class="stat-label">विद्यार्थी</div>
+            </div>
+            <div class="stat-card reveal reveal-delay-1">
+              <div class="stat-number"><span data-count="5000" data-suffix="+">0</span></div>
+              <div class="stat-label">सफल चयन</div>
+            </div>
+            <div class="stat-card reveal reveal-delay-2">
+              <div class="stat-number"><span data-count="7000" data-suffix="+">0</span></div>
+              <div class="stat-label">वीडियो लेक्चर</div>
+            </div>
+            <div class="stat-card reveal reveal-delay-3">
+              <div class="stat-number"><span data-count="10" data-suffix="+">0</span></div>
+              <div class="stat-label">वर्षों का अनुभव</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Our Story -->
+      <section class="section">
+        <div class="container">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3xl);align-items:center;">
+            <div class="reveal">
+              <div class="section-label" style="text-align:left;justify-content:flex-start;">हमारी कहानी</div>
+              <h2 class="section-title" style="text-align:left;">प्रज्ञा क्लासेज की <span>यात्रा</span></h2>
+              <p style="color:var(--text-secondary);line-height:1.8;margin-bottom:var(--space-lg);font-family:var(--font-hindi);">
+                प्रज्ञा क्लासेज बाड़मेर की स्थापना 2014 में Dr. B.L. Dhanday जी द्वारा की गई थी। 
+                शुरुआत एक छोटी सी क्लास से हुई जो आज राजस्थान के हज़ारों विद्यार्थियों की पहली पसंद बन चुकी है।
+              </p>
+              <p style="color:var(--text-secondary);line-height:1.8;margin-bottom:var(--space-lg);font-family:var(--font-hindi);">
+                हमारा उद्देश्य है कि हिंदी माध्यम के विद्यार्थियों को सर्वश्रेष्ठ शिक्षा प्रदान की जाए — 
+                चाहे वो REET हो, स्कूल व्याख्याता हो, NET/JRF हो या कॉलेज सहायक आचार्य की परीक्षा।
+              </p>
+              <p style="color:var(--text-secondary);line-height:1.8;font-family:var(--font-hindi);">
+                आज प्रज्ञा क्लासेज ऑनलाइन और ऑफलाइन दोनों माध्यम से शिक्षा प्रदान कर रही है और 
+                5000+ विद्यार्थियों के सफल चयन में अपना योगदान दे चुकी है।
+              </p>
+            </div>
+            <div class="reveal reveal-delay-2">
+              <div style="display:flex;flex-direction:column;gap:var(--space-xl);">
+                <!-- Dr. B L Dhandey -->
+                <div style="background:white;border-radius:var(--radius-xl);padding:var(--space-xl);box-shadow:var(--shadow-lg);text-align:center;border-top:4px solid var(--accent);">
+                  <img src="/assets/dr-dhandey.jpg" alt="Dr. B L Dhandey" style="width:130px;height:130px;border-radius:50%;object-fit:cover;object-position:top;border:4px solid var(--accent-light);margin-bottom:var(--space-md);">
+                  <h3 style="font-size:1.2rem;margin-bottom:4px;color:var(--primary);font-family:var(--font-hindi);">Dr. B.L. Dhandey</h3>
+                  <p style="color:var(--accent);font-size:0.85rem;font-weight:600;margin-bottom:var(--space-md);">संस्थापक एवं प्रमुख शिक्षक</p>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;">
+                    <span style="background:var(--primary-bg);color:var(--primary);padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;">📚 व्याकरण विशेषज्ञ</span>
+                    <span style="background:var(--primary-bg);color:var(--primary);padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;">📝 पुस्तक लेखक</span>
+                  </div>
+                </div>
+                <!-- Jyoti Dhandey -->
+                <div style="background:white;border-radius:var(--radius-xl);padding:var(--space-xl);box-shadow:var(--shadow-lg);text-align:center;border-top:4px solid var(--primary);">
+                  <img src="/assets/jyoti-dhandey.jpg" alt="Jyoti Dhandey" style="width:130px;height:130px;border-radius:50%;object-fit:cover;object-position:top;border:4px solid rgba(30,58,95,0.15);margin-bottom:var(--space-md);">
+                  <h3 style="font-size:1.2rem;margin-bottom:4px;color:var(--primary);font-family:var(--font-hindi);">Jyoti Dhandey</h3>
+                  <p style="color:var(--accent);font-size:0.85rem;font-weight:600;margin-bottom:var(--space-md);">सह-संस्थापक एवं शिक्षिका</p>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;">
+                    <span style="background:var(--primary-bg);color:var(--primary);padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;">📖 साहित्य विशेषज्ञ</span>
+                    <span style="background:var(--primary-bg);color:var(--primary);padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;">👩‍🏫 अनुभवी शिक्षिका</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Timeline -->
+      <section class="section" style="background:var(--bg-card);">
+        <div class="container">
+          <div class="section-header reveal">
+            <div class="section-label">हमारी यात्रा</div>
+            <h2 class="section-title">प्रज्ञा क्लासेज का <span>सफ़र</span></h2>
+          </div>
+
+          <div class="timeline">
+            <div class="timeline-item reveal">
+              <div class="timeline-content">
+                <h4 style="color:var(--accent);font-size:0.85rem;margin-bottom:4px;">2014</h4>
+                <h3 style="font-size:1.05rem;margin-bottom:var(--space-sm);font-family:var(--font-hindi);">शुरुआत</h3>
+                <p style="font-size:0.88rem;color:var(--text-secondary);font-family:var(--font-hindi);">बाड़मेर में प्रज्ञा क्लासेज की स्थापना। ऑफलाइन कक्षाओं से शुरुआत।</p>
+              </div>
+            </div>
+            <div class="timeline-item reveal">
+              <div class="timeline-content">
+                <h4 style="color:var(--accent);font-size:0.85rem;margin-bottom:4px;">2017</h4>
+                <h3 style="font-size:1.05rem;margin-bottom:var(--space-sm);font-family:var(--font-hindi);">1000+ विद्यार्थी</h3>
+                <p style="font-size:0.88rem;color:var(--text-secondary);font-family:var(--font-hindi);">पहले 1000 विद्यार्थियों का आँकड़ा पूरा। YouTube चैनल की शुरुआत।</p>
+              </div>
+            </div>
+            <div class="timeline-item reveal">
+              <div class="timeline-content">
+                <h4 style="color:var(--accent);font-size:0.85rem;margin-bottom:4px;">2020</h4>
+                <h3 style="font-size:1.05rem;margin-bottom:var(--space-sm);font-family:var(--font-hindi);">ऑनलाइन शिक्षा</h3>
+                <p style="font-size:0.88rem;color:var(--text-secondary);font-family:var(--font-hindi);">COVID के दौरान ऑनलाइन कक्षाएँ शुरू। मोबाइल App लॉन्च।</p>
+              </div>
+            </div>
+            <div class="timeline-item reveal">
+              <div class="timeline-content">
+                <h4 style="color:var(--accent);font-size:0.85rem;margin-bottom:4px;">2023</h4>
+                <h3 style="font-size:1.05rem;margin-bottom:var(--space-sm);font-family:var(--font-hindi);">टेस्ट सीरीज़ लॉन्च</h3>
+                <p style="font-size:0.88rem;color:var(--text-secondary);font-family:var(--font-hindi);">ऑनलाइन टेस्ट सीरीज़ शुरू। 7000+ YouTube वीडियो।</p>
+              </div>
+            </div>
+            <div class="timeline-item reveal">
+              <div class="timeline-content">
+                <h4 style="color:var(--accent);font-size:0.85rem;margin-bottom:4px;">2026</h4>
+                <h3 style="font-size:1.05rem;margin-bottom:var(--space-sm);font-family:var(--font-hindi);">वेबसाइट लॉन्च 🚀</h3>
+                <p style="font-size:0.88rem;color:var(--text-secondary);font-family:var(--font-hindi);">नई वेबसाइट लॉन्च। 10,000+ विद्यार्थी। 5000+ सफल चयन।</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mission -->
+      <section class="section">
+        <div class="container">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-xl);">
+            <div class="card reveal" style="border-top:4px solid var(--accent);">
+              <div style="font-size:2.5rem;margin-bottom:var(--space-md);">🎯</div>
+              <h3 style="font-size:1.2rem;margin-bottom:var(--space-md);font-family:var(--font-hindi);">हमारा मिशन</h3>
+              <p style="color:var(--text-secondary);line-height:1.8;font-family:var(--font-hindi);">
+                हिंदी माध्यम के विद्यार्थियों को गुणवत्तापूर्ण, सस्ती और सुलभ शिक्षा प्रदान करना। 
+                हर विद्यार्थी को उसके सपनों तक पहुँचाना।
+              </p>
+            </div>
+            <div class="card reveal reveal-delay-1" style="border-top:4px solid var(--primary);">
+              <div style="font-size:2.5rem;margin-bottom:var(--space-md);">🔭</div>
+              <h3 style="font-size:1.2rem;margin-bottom:var(--space-md);font-family:var(--font-hindi);">हमारी दृष्टि</h3>
+              <p style="color:var(--text-secondary);line-height:1.8;font-family:var(--font-hindi);">
+                राजस्थान की सर्वश्रेष्ठ हिंदी कोचिंग बनना। Technology और Traditional Teaching 
+                का बेहतरीन संगम प्रदान करना।
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Map Section -->
+      <section class="section-sm" style="background:var(--bg-card);">
+        <div class="container">
+          <div class="section-header reveal">
+            <div class="section-label">हमारा स्थान</div>
+            <h2 class="section-title">हमारा <span>पता</span></h2>
+            <p class="section-desc">${CONTACT.address}</p>
+          </div>
+          <div class="reveal" style="border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-lg);">
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3578.123!2d71.383!3d25.75!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjXCsDQ1JzAwLjAiTiA3McKwMjInNTguOCJF!5e0!3m2!1sen!2sin!4v1" 
+              width="100%" height="400" style="border:0;" allowfullscreen loading="lazy"
+              title="Pragya Classes Barmer Location"></iframe>
+          </div>
+        </div>
+      </section>
+
+      ${renderFooter()}
+      ${renderWhatsAppFab()}
+    `;
+
+    initApp();
+  </script>
+</body>
+</html>
