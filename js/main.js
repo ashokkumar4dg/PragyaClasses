@@ -21,7 +21,7 @@ export function renderNavbar(activePage = '') {
           ${NAV_ITEMS.map(item => `
             <a href="${item.href}" class="nav-link ${currentPath === item.href || currentPath.endsWith(item.href) ? 'active' : ''}">${item.label}</a>
           `).join('')}
-          <a href="/login.html" class="nav-cta">
+          <a href="/login.html" class="nav-cta" id="mobileNavCta" style="display:none;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             लॉगिन
           </a>
@@ -32,7 +32,6 @@ export function renderNavbar(activePage = '') {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             <div id="nav-bell-dot" style="position:absolute;top:0px;right:2px;width:8px;height:8px;background:var(--danger);border-radius:50%;box-shadow: 0 0 8px var(--danger);"></div>
             
-            <!-- Notification Dropdown -->
             <div id="notificationsPopup" style="display:none;position:absolute;top:40px;right:-10px;width:300px;background:white;color:var(--text-primary);border-radius:12px;box-shadow:0 15px 40px rgba(0,0,0,0.15);overflow:hidden;z-index:100;cursor:default;" onclick="event.stopPropagation()">
               <div style="padding:12px 15px;background:rgba(16,185,129,0.1);border-bottom:1px solid #eee;font-weight:700;display:flex;justify-content:space-between;align-items:center;">
                 <span style="color:var(--primary);">लेटेस्ट अपडेट्स</span>
@@ -52,6 +51,11 @@ export function renderNavbar(activePage = '') {
               </div>
             </div>
           </div>
+          
+          <a href="/login.html" class="nav-cta" id="desktopNavCta">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            लॉगिन
+          </a>
           <div class="nav-hamburger" id="navHamburger" onclick="toggleMobileNav()">
             <span></span>
             <span></span>
