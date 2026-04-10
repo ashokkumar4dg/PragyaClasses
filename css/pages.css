@@ -1391,27 +1391,31 @@
 .testimonials-track {
   display: flex;
   gap: var(--space-xl);
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
   padding: var(--space-md) 0;
-  scrollbar-width: none;
+  width: max-content;
+  animation: scrollTestimonials 40s linear infinite;
 }
 
-.testimonials-track::-webkit-scrollbar {
-  display: none;
+.testimonials-track:hover {
+  animation-play-state: paused;
 }
 
 .testimonials-track .testimonial-card {
   min-width: 350px;
-  scroll-snap-align: start;
   flex-shrink: 0;
+  white-space: normal;
 }
 
 @media (max-width: 480px) {
   .testimonials-track .testimonial-card {
     min-width: 280px;
   }
+}
+
+@keyframes scrollTestimonials {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-50% - (var(--space-xl) / 2))); }
 }
 
 /* ---- Q&A / Doubts ---- */
