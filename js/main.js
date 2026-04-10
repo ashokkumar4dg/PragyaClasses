@@ -21,10 +21,16 @@ export function renderNavbar(activePage = '') {
           ${NAV_ITEMS.map(item => `
             <a href="${item.href}" class="nav-link ${currentPath === item.href || currentPath.endsWith(item.href) ? 'active' : ''}">${item.label}</a>
           `).join('')}
-          <a href="/login.html" class="nav-cta">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            लॉगिन
-          </a>
+          <div style="display:flex;align-items:center;gap:20px;margin-left:10px;">
+            <div style="position:relative;cursor:pointer;color:inherit;opacity:0.8;transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'" title="Notifications">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <div style="position:absolute;top:0px;right:2px;width:8px;height:8px;background:var(--danger);border-radius:50%;"></div>
+            </div>
+            <a href="/login.html" class="nav-cta">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              लॉगिन
+            </a>
+          </div>
         </div>
 
         <div class="nav-hamburger" id="navHamburger" onclick="toggleMobileNav()">
@@ -186,7 +192,8 @@ async function loadYouTubeVideos() {
     const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.youtube.com%2Ffeeds%2Fvideos.xml%3Fchannel_id%3DUCb04gbDehbDP69hrvsZ9NVQ');
     const data = await res.json();
     if (data.items && data.items.length > 0) {
-      container.innerHTML = data.items.slice(0, 3).map((video, i) => `
+      const longVideos = data.items.filter(v => !v.title.toLowerCase().includes('#shorts')).slice(0, 3);
+      container.innerHTML = longVideos.map((video, i) => `
         <div class="youtube-card-enhanced reveal revealed reveal-delay-${i + 1}" onclick="window.open('${video.link}','_blank')">
           <div style="position:relative;">
             <img src="${video.thumbnail}" alt="${video.title}" class="youtube-thumb" loading="lazy">
