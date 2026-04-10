@@ -153,7 +153,7 @@
   flex-direction: column;
   gap: 5px;
   padding: 8px;
-  z-index: 10;
+  z-index: 30;
   cursor: pointer;
 }
 
@@ -195,6 +195,7 @@
     gap: var(--space-lg);
     transition: right var(--transition-base);
     box-shadow: var(--shadow-xl);
+    z-index: 20;
   }
 
   .nav-links.open {
@@ -208,7 +209,7 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    z-index: var(--z-fixed) - 1;
+    z-index: 15;
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--transition-base);
