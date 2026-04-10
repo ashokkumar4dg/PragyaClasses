@@ -325,6 +325,36 @@ export const TESTIMONIALS = [
     avatar: 'MJ',
     rating: 5,
   },
+  {
+    id: 6,
+    name: 'सुमन देवासी',
+    nameEn: 'Suman Dewasi',
+    role: 'YouTube Student',
+    roleEn: 'YouTube Student',
+    text: 'सर आपकी यूट्यूब क्लासेस से हिंदी साहित्य का इतिहास बहुत अच्छे से समझ आ गया। फ्री में इतना अच्छा कंटेंट देने के लिए धन्यवाद।',
+    avatar: 'SD',
+    rating: 5,
+  },
+  {
+    id: 7,
+    name: 'दिनेश कुमार',
+    nameEn: 'Dinesh Kumar',
+    role: 'YouTube Student',
+    roleEn: 'YouTube Student',
+    text: 'सर जी आपके पढ़ाने का तरीका बहुत ही शानदार है। एक बार में ही सब दिमाग में बैठ जाता है।',
+    avatar: 'DK',
+    rating: 5,
+  },
+  {
+    id: 8,
+    name: 'पूजा मीणा',
+    nameEn: 'Pooja Meena',
+    role: 'REET Aspirant',
+    roleEn: 'REET Aspirant',
+    text: 'मैंने बहुत सी जगह से ऑनलाइन कोर्स लिया पर आपके जैसा व्याकरण कोई नहीं पढ़ाता। एकदम बेसिक से समझाते हैं।',
+    avatar: 'PM',
+    rating: 5,
+  },
 ];
 
 // YouTube Videos (real channel videos)
@@ -388,13 +418,13 @@ export const NAV_ITEMS = [
 // Generate WhatsApp payment link
 export function getWhatsAppPaymentLink(courseName, price) {
   const message = encodeURIComponent(
-    `🙏 नमस्कार! मुझे "${courseName}" कोर्स खरीदना है।\n💰 कीमत: ₹${price}\n\nकृपया पेमेंट की जानकारी दें।`
+    `नमस्ते, मुझे "${courseName}" कोर्स खरीदना है।\nकीमत: ₹${price}\n\nकृपया पेमेंट की जानकारी दें।`
   );
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
 }
 
 // Generate WhatsApp contact link
 export function getWhatsAppLink(message = '') {
-  const msg = encodeURIComponent(message || 'नमस्कार! मुझे प्रज्ञा क्लासेज के बारे में जानकारी चाहिए।');
+  const msg = encodeURIComponent(message || 'नमस्ते, मैं प्रज्ञा क्लासेज के कोर्सेज के बारे में जानकारी चाहता/चाहती हूँ।');
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`;
 }
