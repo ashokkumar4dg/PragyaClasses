@@ -122,14 +122,18 @@
         </div>
 
         <!-- Charts Row -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-xl);margin-bottom:var(--space-xl);">
-          <div class="card" style="padding:var(--space-xl);">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:var(--space-xl);margin-bottom:var(--space-xl);">
+          <div class="card" style="padding:var(--space-xl);position:relative;width:100%;box-sizing:border-box;">
             <h4 style="margin-bottom:var(--space-lg);font-family:var(--font-hindi);">📊 Topic-wise Strength</h4>
-            <canvas id="topicChart" height="250"></canvas>
+            <div style="position:relative;height:250px;width:100%;">
+              <canvas id="topicChart"></canvas>
+            </div>
           </div>
-          <div class="card" style="padding:var(--space-xl);">
+          <div class="card" style="padding:var(--space-xl);position:relative;width:100%;box-sizing:border-box;">
             <h4 style="margin-bottom:var(--space-lg);font-family:var(--font-hindi);">📈 Score Trend</h4>
-            <canvas id="scoreChart" height="250"></canvas>
+            <div style="position:relative;height:250px;width:100%;">
+              <canvas id="scoreChart"></canvas>
+            </div>
           </div>
         </div>
 
@@ -343,7 +347,7 @@
     window.handleLogout = function() {
       localStorage.removeItem('user');
       showToast('👋 लॉगआउट सफल!');
-      setTimeout(() => window.location.href = '/login.html', 500);
+      setTimeout(() => window.location.href = '/', 500);
     };
 
     function render() {
