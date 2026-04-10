@@ -201,6 +201,9 @@
   .nav-links.open {
     right: 0;
   }
+  
+  #desktopNavCta { display: none; }
+  #mobileNavCta { display: inline-flex !important; margin-top: 10px; width: 100%; justify-content: center; }
 
   .nav-overlay {
     position: fixed;
