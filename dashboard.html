@@ -13,8 +13,8 @@
 <body>
   <div id="app"></div>
   <script type="module">
-    import { showToast } from '/js/main.js';
-    import { COURSES, FREE_RESOURCES } from '/js/data.js';
+    import { toggleMobileNav } from '/js/main.js';
+    import { COURSES } from '/js/data.js';
 
     // Auth check
     const user = JSON.parse(localStorage.getItem('user') || 'null');
@@ -24,6 +24,9 @@
 
     const app = document.getElementById('app');
     let activeSection = 'overview';
+    
+    let topicChartInstance = null;
+    let scoreChartInstance = null;
 
     // Mock student data
     const studentData = {
@@ -54,7 +57,8 @@
         { id: 'overview', icon: '📊', label: 'ओवरव्यू' },
         { id: 'courses', icon: '📚', label: 'मेरे कोर्स' },
         { id: 'tests', icon: '📝', label: 'टेस्ट रिजल्ट' },
-        { id: 'notes', icon: '📄', label: 'नोट्स' },
+        { id: 'notes', icon: '📄', label: 'ई-नोट्स' },
+        { id: 'transactions', icon: '💳', label: 'पेमेंट इतिहास' },
         { id: 'doubts', icon: '💬', label: 'डाउट्स' },
       ];
       return `
@@ -79,6 +83,7 @@
         case 'courses': return renderMyCourses();
         case 'tests': return renderTests();
         case 'notes': return renderNotes();
+        case 'transactions': return renderTransactions();
         case 'doubts': return renderDoubts();
         default: return renderOverview();
       }
@@ -177,18 +182,21 @@
         <h2 style="font-family:var(--font-hindi);margin-bottom:var(--space-xl);">📚 मेरे कोर्स</h2>
         <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
           ${enrolled.map((c, i) => `
-            <div class="card" style="padding:var(--space-xl);display:flex;gap:var(--space-xl);align-items:center;">
+            <div class="card" style="padding:var(--space-xl);display:flex;gap:var(--space-xl);align-items:center;flex-wrap:wrap;">
               <div style="width:120px;height:80px;background:${c.gradient};border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:white;font-family:var(--font-hindi);font-size:0.8rem;text-align:center;padding:8px;flex-shrink:0;">${c.title.substring(0, 20)}...</div>
-              <div style="flex:1;">
+              <div style="flex:1;min-width:250px;">
                 <h4 style="font-family:var(--font-hindi);margin-bottom:var(--space-sm);">${c.title}</h4>
                 <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-sm);">
                   <span style="font-size:0.82rem;color:var(--text-secondary);">Progress: ${30 + i * 25}%</span>
                 </div>
-                <div class="progress-bar" style="height:8px;">
+                <div class="progress-bar" style="height:8px;margin-bottom:var(--space-md);">
                   <div class="progress-fill" style="width:${30 + i * 25}%"></div>
                 </div>
               </div>
-              <a href="/test-series.html" class="btn btn-primary btn-sm">जारी रखें →</a>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn btn-outline btn-sm" onclick="alert('क्लास वीडियोस जल्द उपलब्ध होंगे')">🎥 वीडियो क्लास</button>
+                <button class="btn btn-outline btn-sm" onclick="alert('पीडीएफ नोट्स जल्द उपलब्ध होंगे')">📑 पीडीएफ नोट्स</button>
+              </div>
             </div>
           `).join('')}
         </div>
@@ -231,10 +239,15 @@
     }
 
     function renderNotes() {
+      const mockPdfs = [
+        { title: 'हिंदी साहित्य का इतिहास - शार्ट नोट्स', pages: 45, size: '2.4 MB' },
+        { title: 'रस और अलंकार - प्रश्नोत्तरी', pages: 12, size: '1.1 MB' },
+        { title: 'पिछले वर्ष के प्रश्न पत्र (विस्तृत हल)', pages: 120, size: '5.6 MB' }
+      ];
       return `
         <h2 style="font-family:var(--font-hindi);margin-bottom:var(--space-xl);">📄 मेरे नोट्स & डाउनलोड</h2>
         <div style="display:flex;flex-direction:column;gap:var(--space-md);">
-          ${FREE_RESOURCES.pdfs.map(pdf => `
+          ${mockPdfs.map(pdf => `
             <div class="resource-card">
               <div class="resource-icon pdf">📄</div>
               <div style="flex:1;">
@@ -244,6 +257,40 @@
               <button class="btn btn-primary btn-sm" onclick="alert('📥 डाउनलोड शुरू! (Demo)')">📥 डाउनलोड</button>
             </div>
           `).join('')}
+        </div>
+      `;
+    }
+
+    function renderTransactions() {
+      const transactions = [
+        { id: 'TXN89324789', desc: 'हिंदी साहित्य - स्कूल व्याख्याता कोर्स', amount: '₹1499', date: '01 Apr 2026', status: 'Succeeded' },
+        { id: 'TXN89123445', desc: 'REET लेवल 2 हिंदी टेस्ट सीरीज़', amount: '₹299', date: '25 Mar 2026', status: 'Succeeded' }
+      ];
+      return `
+        <h2 style="font-family:var(--font-hindi);margin-bottom:var(--space-xl);">💳 पेमेंट इतिहास</h2>
+        <div class="admin-table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>तारीख</th>
+                <th>विवरण</th>
+                <th>लेनदेन ID</th>
+                <th>राशि</th>
+                <th>स्थिति</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${transactions.map(t => `
+                <tr>
+                  <td>${t.date}</td>
+                  <td style="font-family:var(--font-hindi);">${t.desc}</td>
+                  <td style="font-family:monospace;color:var(--text-secondary);">${t.id}</td>
+                  <td style="font-weight:bold;">${t.amount}</td>
+                  <td><span class="badge badge-success">सफल</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
         </div>
       `;
     }
@@ -337,7 +384,8 @@
       // Topic Strength Radar Chart
       const topicCtx = document.getElementById('topicChart');
       if (topicCtx) {
-        new Chart(topicCtx, {
+        if (topicChartInstance) topicChartInstance.destroy();
+        topicChartInstance = new Chart(topicCtx, {
           type: 'radar',
           data: {
             labels: Object.keys(studentData.topicStrength),
@@ -372,7 +420,8 @@
       // Score Trend Line Chart
       const scoreCtx = document.getElementById('scoreChart');
       if (scoreCtx) {
-        new Chart(scoreCtx, {
+        if (scoreChartInstance) scoreChartInstance.destroy();
+        scoreChartInstance = new Chart(scoreCtx, {
           type: 'line',
           data: {
             labels: ['टेस्ट 1', 'टेस्ट 2', 'टेस्ट 3', 'टेस्ट 4', 'टेस्ट 5', 'टेस्ट 6', 'टेस्ट 7', 'टेस्ट 8'],
