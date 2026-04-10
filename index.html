@@ -226,8 +226,8 @@
 
             <!-- Jyoti Dhandey -->
             <div class="faculty-card reveal reveal-delay-2">
-              <img src="/assets/jyoti-dhandey.jpg" alt="(Advocate) Jyoti Dhandey - सह-संस्थापक, प्रज्ञा क्लासेज बाड़मेर" class="faculty-photo" loading="lazy">
-              <h3 class="faculty-name">(Advocate) Jyoti Dhandey</h3>
+              <img src="/assets/jyoti-dhandey.jpg" alt="Adv. Jyoti Dhandey - सह-संस्थापक, प्रज्ञा क्लासेज बाड़मेर" class="faculty-photo" loading="lazy">
+              <h3 class="faculty-name">Adv. Jyoti Dhandey</h3>
               <div class="faculty-role">सह-संस्थापक एवं शिक्षिका</div>
               <p class="faculty-bio">
                 हिंदी साहित्य एवं भाषा-विज्ञान की अनुभवी शिक्षिका। विद्यार्थियों को सरल भाषा में विषय समझाने में कुशल।
@@ -402,7 +402,7 @@
             </div>
             <div style="flex:1;min-width:300px;text-align:center;" class="reveal reveal-delay-2">
               <div style="position:relative;display:inline-block;">
-                <img src="/assets/dr-dhandey.jpg" alt="Specialist" style="width:250px;height:250px;border-radius:50%;object-fit:cover;border:8px solid rgba(255,255,255,0.1);box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+                <img src="/assets/video_call_session.png" alt="1-on-1 Online Video Session" style="width:250px;height:250px;border-radius:50%;object-fit:cover;border:8px solid rgba(255,255,255,0.1);box-shadow:0 20px 40px rgba(0,0,0,0.3);">
                 <div style="position:absolute;bottom:10px;right:10px;background:#10B981;color:white;width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 15px rgba(16,185,129,0.4);border:4px solid #1E3A5F;">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
                 </div>
@@ -464,7 +464,8 @@
             <p class="section-desc">हज़ारों विद्यार्थियों ने प्रज्ञा क्लासेज से अपने सपने पूरे किए</p>
           </div>
 
-          <div class="testimonials-track reveal">
+          <div style="overflow: hidden; width: 100%; padding-bottom: 20px;">
+            <div class="testimonials-track reveal">
             ${TESTIMONIALS.map(t => `
               <div class="testimonial-card">
                 <p class="testimonial-text">${t.text}</p>
@@ -480,6 +481,7 @@
                 </div>
               </div>
             `).join('')}
+          </div>
           </div>
         </div>
       </section>
