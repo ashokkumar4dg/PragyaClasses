@@ -21,22 +21,42 @@ export function renderNavbar(activePage = '') {
           ${NAV_ITEMS.map(item => `
             <a href="${item.href}" class="nav-link ${currentPath === item.href || currentPath.endsWith(item.href) ? 'active' : ''}">${item.label}</a>
           `).join('')}
-          <div style="display:flex;align-items:center;gap:20px;margin-left:10px;">
-            <div style="position:relative;cursor:pointer;color:inherit;opacity:0.8;transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'" title="Notifications">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-              <div style="position:absolute;top:0px;right:2px;width:8px;height:8px;background:var(--danger);border-radius:50%;"></div>
-            </div>
-            <a href="/login.html" class="nav-cta">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              लॉगिन
-            </a>
-          </div>
+          <a href="/login.html" class="nav-cta">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            लॉगिन
+          </a>
         </div>
 
-        <div class="nav-hamburger" id="navHamburger" onclick="toggleMobileNav()">
-          <span></span>
-          <span></span>
-          <span></span>
+        <div style="display:flex;align-items:center;gap:20px;z-index:30;">
+          <div style="position:relative;cursor:pointer;color:inherit;opacity:0.8;transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'" title="Notifications" onclick="toggleNotifications(event)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <div id="nav-bell-dot" style="position:absolute;top:0px;right:2px;width:8px;height:8px;background:var(--danger);border-radius:50%;box-shadow: 0 0 8px var(--danger);"></div>
+            
+            <!-- Notification Dropdown -->
+            <div id="notificationsPopup" style="display:none;position:absolute;top:40px;right:-10px;width:300px;background:white;color:var(--text-primary);border-radius:12px;box-shadow:0 15px 40px rgba(0,0,0,0.15);overflow:hidden;z-index:100;cursor:default;" onclick="event.stopPropagation()">
+              <div style="padding:12px 15px;background:rgba(16,185,129,0.1);border-bottom:1px solid #eee;font-weight:700;display:flex;justify-content:space-between;align-items:center;">
+                <span style="color:var(--primary);">लेटेस्ट अपडेट्स</span>
+                <span style="background:#FF4444;color:white;font-size:0.7rem;padding:2px 6px;border-radius:10px;">New</span>
+              </div>
+              <div style="padding:0;max-height:300px;overflow-y:auto;text-align:left;">
+                <div style="padding:15px;border-bottom:1px solid #f0f0f0;">
+                  <h4 style="margin:0 0 5px;font-size:0.9rem;color:var(--primary);font-family:var(--font-hindi);">🔥 स्पेशल डिज़काउंट!</h4>
+                  <p style="margin:0;font-size:0.8rem;color:var(--text-secondary);line-height:1.4;">सभी ऑनलाइन कोर्सेज पर सीमित समय के लिए 50% की छूट!</p>
+                  <span style="font-size:0.7rem;color:#aaa;margin-top:5px;display:block;">अभी जुड़े</span>
+                </div>
+                <div style="padding:15px;border-bottom:1px solid #f0f0f0;">
+                  <h4 style="margin:0 0 5px;font-size:0.9rem;color:var(--primary);font-family:var(--font-hindi);">नया बैच शुरू</h4>
+                  <p style="margin:0;font-size:0.8rem;color:var(--text-secondary);line-height:1.4;">REET और स्कूल व्याख्याता के नए बैच 15 तारीख से!</p>
+                  <span style="font-size:0.7rem;color:#aaa;margin-top:5px;display:block;">2 घंटे पहले</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="nav-hamburger" id="navHamburger" onclick="toggleMobileNav()">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </div>
       </div>
     </nav>
@@ -188,33 +208,34 @@ export function initApp() {
 async function loadYouTubeVideos() {
   const container = document.querySelector('.youtube-grid');
   if (!container) return;
+  
+  // Using static videos from data.js to ensure only high-quality long-form videos are shown without Shorts mixed in
+  // The data.js already has const YOUTUBE_VIDEOS exported, but we need to import it if we want it here.
+  // Wait, YOUTUBE_VIDEOS is imported at the top of js/main.js?
+  // We can just look if it's available. If not, we can import it dynamically.
   try {
-    const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.youtube.com%2Ffeeds%2Fvideos.xml%3Fchannel_id%3DUCb04gbDehbDP69hrvsZ9NVQ');
-    const data = await res.json();
-    if (data.items && data.items.length > 0) {
-      const longVideos = data.items.filter(v => !v.title.toLowerCase().includes('#shorts')).slice(0, 3);
-      container.innerHTML = longVideos.map((video, i) => `
-        <div class="youtube-card-enhanced reveal revealed reveal-delay-${i + 1}" onclick="window.open('${video.link}','_blank')">
-          <div style="position:relative;">
-            <img src="${video.thumbnail}" alt="${video.title}" class="youtube-thumb" loading="lazy">
-            <div class="youtube-play-overlay">
-              <div class="youtube-play-btn">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><polygon points="9.545 15.568 15.818 12 9.545 8.432"/></svg>
-              </div>
-            </div>
-          </div>
-          <div style="padding:16px 18px;display:flex;align-items:flex-start;gap:12px;">
-            <div style="width:36px;height:36px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:white;font-size:0.75rem;font-weight:700;">PC</div>
-            <div>
-              <p style="font-weight:600;font-size:0.9rem;color:white;line-height:1.4;font-family:var(--font-hindi);margin-bottom:6px;">${video.title}</p>
-              <p style="font-size:0.78rem;color:rgba(255,255,255,0.5);">Pragya Classes BMR</p>
+    const { YOUTUBE_VIDEOS: videos } = await import('/js/data.js');
+    container.innerHTML = videos.map((video, i) => `
+      <div class="youtube-card-enhanced reveal revealed reveal-delay-${i + 1}" onclick="window.open('https://www.youtube.com/watch?v=${video.id}','_blank')">
+        <div style="position:relative;">
+          <img src="${video.thumbnail}" alt="${video.title}" class="youtube-thumb" loading="lazy" style="height:200px;object-fit:cover;">
+          <div class="youtube-play-overlay">
+            <div class="youtube-play-btn">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><polygon points="9.545 15.568 15.818 12 9.545 8.432"/></svg>
             </div>
           </div>
         </div>
-      `).join('');
-    }
+        <div style="padding:16px 18px;display:flex;align-items:flex-start;gap:12px;">
+          <div style="width:36px;height:36px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:white;font-size:0.75rem;font-weight:700;">PC</div>
+          <div>
+            <p style="font-weight:600;font-size:0.9rem;color:white;line-height:1.4;font-family:var(--font-hindi);margin-bottom:6px;">${video.title}</p>
+            <p style="font-size:0.78rem;color:rgba(255,255,255,0.5);">Pragya Classes BMR</p>
+          </div>
+        </div>
+      </div>
+    `).join('');
   } catch (e) {
-    console.error('Failed to auto load youtube videos', e);
+    console.warn('Failed to load youtube videos', e);
   }
 }
 
@@ -326,3 +347,23 @@ export function startCountdown(targetDate, containerId) {
 export function formatPrice(price) {
   return '₹' + price.toLocaleString('en-IN');
 }
+
+// ---- Notification Menu Toggle ----
+window.toggleNotifications = function(e) {
+  e.stopPropagation();
+  const popup = document.getElementById('notificationsPopup');
+  const dot = document.getElementById('nav-bell-dot');
+  if (popup.style.display === 'none' || !popup.style.display) {
+    popup.style.display = 'block';
+    if(dot) dot.style.display = 'none'; // read all
+  } else {
+    popup.style.display = 'none';
+  }
+};
+
+document.addEventListener('click', () => {
+  const popup = document.getElementById('notificationsPopup');
+  if (popup && popup.style.display === 'block') {
+    popup.style.display = 'none';
+  }
+});
