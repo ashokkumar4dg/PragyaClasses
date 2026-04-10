@@ -153,7 +153,7 @@ export function initApp() {
   }
 
   // Counter animation
-  const counters = document.querySelectorAll('[data-count]');
+  const counters = document.querySelectorAll('[data-count], [data-dynamic-counter]');
   if (counters.length > 0) {
     const counterObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -166,10 +166,63 @@ export function initApp() {
 
     counters.forEach(el => counterObserver.observe(el));
   }
+
+  // Load YouTube Videos
+  loadYouTubeVideos();
+
+  // Testimonials Slider Setup
+  const track = document.querySelector('.testimonials-track');
+  if (track) {
+    // Duplicate inner HTML to create seamless loop
+    const originalContent = track.innerHTML;
+    track.innerHTML = originalContent + originalContent;
+  }
+}
+
+async function loadYouTubeVideos() {
+  const container = document.querySelector('.youtube-grid');
+  if (!container) return;
+  try {
+    const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.youtube.com%2Ffeeds%2Fvideos.xml%3Fchannel_id%3DUCb04gbDehbDP69hrvsZ9NVQ');
+    const data = await res.json();
+    if (data.items && data.items.length > 0) {
+      container.innerHTML = data.items.slice(0, 3).map((video, i) => `
+        <div class="youtube-card-enhanced reveal revealed reveal-delay-${i + 1}" onclick="window.open('${video.link}','_blank')">
+          <div style="position:relative;">
+            <img src="${video.thumbnail}" alt="${video.title}" class="youtube-thumb" loading="lazy">
+            <div class="youtube-play-overlay">
+              <div class="youtube-play-btn">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><polygon points="9.545 15.568 15.818 12 9.545 8.432"/></svg>
+              </div>
+            </div>
+          </div>
+          <div style="padding:16px 18px;display:flex;align-items:flex-start;gap:12px;">
+            <div style="width:36px;height:36px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:white;font-size:0.75rem;font-weight:700;">PC</div>
+            <div>
+              <p style="font-weight:600;font-size:0.9rem;color:white;line-height:1.4;font-family:var(--font-hindi);margin-bottom:6px;">${video.title}</p>
+              <p style="font-size:0.78rem;color:rgba(255,255,255,0.5);">Pragya Classes BMR</p>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+  } catch (e) {
+    console.error('Failed to auto load youtube videos', e);
+  }
 }
 
 function animateCounter(el) {
-  const target = parseInt(el.getAttribute('data-count'));
+  let target = 0;
+  if (el.hasAttribute('data-dynamic-counter')) {
+    const base = parseInt(el.getAttribute('data-base') || '0');
+    const startD = new Date('2026-04-01').getTime();
+    const now = new Date().getTime();
+    const daysElapsed = Math.floor((now - startD) / (1000 * 3600 * 24));
+    target = base + Math.floor(daysElapsed * 1.5); // Increment roughly 1-2 per day naturally
+  } else {
+    target = parseInt(el.getAttribute('data-count'));
+  }
+
   const suffix = el.getAttribute('data-suffix') || '';
   const duration = 2000;
   const start = 0;
