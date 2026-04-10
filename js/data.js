@@ -392,11 +392,14 @@ export const FREE_RESOURCES = {
   ],
 };
 
+const offerEnd = new Date();
+offerEnd.setHours(offerEnd.getHours() + 6);
+
 // Special Offer
 export const SPECIAL_OFFER = {
   title: 'स्पेशल ऑफर',
   subtitle: 'सभी ऑनलाइन टेस्ट सीरीज़ पर महाबचत ऑफर!',
-  endDate: '2026-04-30T23:59:59',
+  endDate: offerEnd.toISOString(),
   deals: [
     { name: 'स्कूल व्याख्याता टेस्ट सीरीज़-01', original: 3000, offer: 199 },
     { name: 'वरिष्ठ शिक्षक टेस्ट सीरीज़-01', original: 3000, offer: 199 },
